@@ -12,8 +12,11 @@ import {
     ShowModal,
 } from "./components/components.js";
 
+let variableWithName = "Ola mundo";
+
 const onInput = (value) => {
-    console.log(value.value);
+    variableWithName = value.value;
+    document.getElementById("textInput").textContent = value.value;
 };
 
 let stateModal = false;
@@ -50,6 +53,7 @@ const AppComposition = Div({
                     id: "modalOne",
                     childs: [Input({ placeholder: "Qual seu nome?", type: "text" })],
                 }),
+                Text({ textContent: variableWithName, id: "textInput" }),
                 Label({ labelFor: "teste1", textContent: "Você é maior de idade?" }),
                 Checkbox({ value: "teste", id: "teste1" }),
                 Text({ textContent: "Você concorda com os termos?" }),
