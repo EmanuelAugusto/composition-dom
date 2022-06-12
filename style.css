@@ -1,8 +1,52 @@
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+.bg-red {
+    background-color: rebeccapurple;
+}
+
+.display-flex {
+    display: flex;
+}
+
+.input-border {
+    border: 1px solid rgb(184, 184, 184);
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.text-white {
+    color: white
+}
+
+.padding-05 {
+    padding: 5px;
+}
+
+.display-column {
+    flex-direction: column;
+}
+
+.input-border:focus {
+    border: 1px solid rgb(184, 184, 184);
+    background-color: transparent;
+    resize: none;
+    outline: none;
+}
+
+.button {
+    border: 0px;
+    border-radius: 5px;
+    padding: 10px;
+    -webkit-box-shadow: 0px 0px 7px 0px rgba(0, 0, 0, 0.76);
+    box-shadow: 0px 0px 7px 0px rgba(0, 0, 0, 0.76);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.margin-bt {
+    margin-bottom: 10px;
+}
+
+.align-items {
+    align-items: center;
 }
