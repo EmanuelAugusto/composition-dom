@@ -17,9 +17,8 @@ const obj = app.store({
   age: "",
   macarrao: "",
   camarao: "",
-  todoList: ['oi', 'oi', 'oi', 'oi', 'oi'],
+  todoList: ["oi", "oi", "oi", "oi", "oi"],
 });
-
 
 const onInput = (value) => {
   obj.foo = value.value;
@@ -30,7 +29,7 @@ const onInputAge = (value) => {
 };
 
 const onInputFood = (value) => {
-  if (value.checked) {
+  if (value.value == "Sim") {
     obj.macarrao = "macarrao";
   } else {
     obj.macarrao = "";
@@ -48,8 +47,6 @@ const onInputCamarao = (value) => {
 const onSubmit = (evt) => {
   evt.preventDefault();
   obj.todoList.push("oi");
-
-  console.log(obj);
 };
 
 const AppComposition = Div({
@@ -103,15 +100,17 @@ const AppComposition = Div({
         }),
         Div({
           childs: [
-            Radio({ value: "Sim", id: "sim" }),
+            Radio({ value: "Sim", id: "sim", onClick: onInputFood, name: "confirma" }),
             Label({ textContent: "Sim", reactive: true, labelFor: "sim" }),
-            Radio({ value: "Sim", id: "sim" }),
+            Radio({ value: "Não", id: "sim", onClick: onInputFood, name: "confirma" }),
             Label({ textContent: "Não", reactive: true, labelFor: "sim" }),
           ],
         }),
         Div({
-          childs: obj.todoList.map(tL => Text({textContent: `${tL} \${foo}`})),
-          reactive: true
+          childs: obj.todoList.map((tL) =>
+            Text({ textContent: `${tL} \${foo}`, reactive: true })
+          ),
+          reactive: true,
         }),
       ],
     }),

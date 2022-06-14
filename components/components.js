@@ -5,7 +5,6 @@ const ElementsBind = {};
 const expression = /\$\{.*\}/;
 
 export const AppCp = () => {
- 
   return {
     store: CreateStore,
     CreateApp,
@@ -18,23 +17,38 @@ export const CreateApp = (app, rootElement, title, data) => {
   document.getElementById(rootElement).appendChild(app);
 
   RequestRenderUI(data);
+};
 
+export const CreateStore = (obj) => {
+  return new Proxy(obj, {
+    get(target, property) {
+      return target[property];
+    },
+    set(target, property, value) {
+      target[property] = value;
+      RequestRenderUI(obj);
+      return true;
+    },
+  });
 };
 
 export const RequestRenderUI = (data) => {
-
   for (const key in ElementsBind) {
-    let textSanitezed = "";
-    const element = document.querySelector('[data-cp="' + key + '"]');
-    for (const iterator of ElementsBind[key].bindsValues) {
-      textSanitezed = textSanitezed
-        ? textSanitezed.replace(`\$\{${iterator}\}`, data[iterator])
-        : ElementsBind[key].originalContent.replace(
-            `\$\{${iterator}\}`,
-            data[iterator]
-          );
+    if (ElementsBind[key].isText) {
+      let textSanitezed = "";
+      const element = document.querySelector('[data-cp="' + key + '"]');
+      for (const iterator of ElementsBind[key].bindsValues) {
+        textSanitezed = textSanitezed
+          ? textSanitezed.replace(`\$\{${iterator}\}`, data[iterator])
+          : ElementsBind[key].originalContent.replace(
+              `\$\{${iterator}\}`,
+              data[iterator]
+            );
+      }
+      element.textContent = textSanitezed;
+    } else {
+      console.log(ElementsBind[key]);
     }
-    element.textContent = textSanitezed;
   }
 };
 
@@ -85,7 +99,7 @@ export const Input = ({
 export const Div = ({ textContent, childs, id, classList, reactive }) => {
   const div = document.createElement("div");
   if (id) div.id = id;
-
+  const uuidD = uuid.v4();
   if (textContent) {
     div.textContent = textContent;
   }
@@ -96,14 +110,26 @@ export const Div = ({ textContent, childs, id, classList, reactive }) => {
     }
   }
 
+  let childsRendered = [];
+
   if (childs) {
-    for (const child of childs) {
+    for (const [key, child] of childs.entries()) {
+      child.setAttribute("key-cp", `${uuidD}-${key}`);
       div.appendChild(child);
+      childsRendered.push(child.getAttribute("data-cp"));
     }
   }
 
-  if(reactive){
-      
+  if (reactive) {
+    div.setAttribute("data-cp", uuidD);
+
+    ElementsBind[uuidD] = {
+      originalContent: null,
+      bindsValues: [],
+      childrensAlreadyRendered: childsRendered,
+      isTextContentNull: true,
+      isText: false,
+    };
   }
 
   return div;
@@ -150,7 +176,7 @@ export const Checkbox = ({
   return checkbox;
 };
 
-export const Radio = ({ value, id, name, classList }) => {
+export const Radio = ({ value, id, name, classList, onClick }) => {
   const radio = document.createElement("input");
   radio.type = "radio";
   radio.value = value;
@@ -161,6 +187,12 @@ export const Radio = ({ value, id, name, classList }) => {
     for (const className of classList) {
       radio.classList.add(className);
     }
+  }
+
+  if(onClick){
+      radio.onclick = (evt)=>{
+          onClick(radio, evt)
+      }
   }
 
   return radio;
@@ -195,6 +227,7 @@ export const Label = ({ labelFor, textContent, id, classList, reactive }) => {
       ElementsBind[uuidL] = {
         originalContent: textContent,
         bindsValues: [...binds],
+        isText: true,
       };
       label.setAttribute("data-cp", uuidL);
     }
@@ -238,6 +271,7 @@ export const Text = ({
       ElementsBind[uuidP] = {
         originalContent: textContent,
         bindsValues: [...binds],
+        isText: true,
       };
       p.setAttribute("data-cp", uuidP);
     }
@@ -343,17 +377,4 @@ export const WatchValue = (obj) => {
   });
 
   return value;
-};
-
-export const CreateStore = (obj, UiText) => {
-  return new Proxy(obj, {
-    get(target, property) {
-      return target[property];
-    },
-    set(target, property, value) {
-      target[property] = value;
-      RequestRenderUI(obj, UiText);
-      return true;
-    },
-  });
 };
