@@ -1,309 +1,359 @@
-export const App = (app, rootElement, title, data, UiText) => {
-    if (title) document.title = title;
+import * as uuid from "uuid";
 
-    document.getElementById(rootElement).appendChild(app);
-    RequestRenderUI(data, UiText);
+const ElementsBind = {};
+
+const expression = /\$\{.*\}/;
+
+export const AppCp = () => {
+ 
+  return {
+    store: CreateStore,
+    CreateApp,
+  };
 };
 
-export const RequestRenderUI = (data, UiText) => {
-    const elments = document.querySelectorAll("[reactive]");
+export const CreateApp = (app, rootElement, title, data) => {
+  if (title) document.title = title;
 
-    for (const el of elments) {
-        const attrVal = el.getAttribute("bind");
-        const uiText = el.getAttribute("uiText");
+  document.getElementById(rootElement).appendChild(app);
 
-        if (["input"].includes(el.tagName.toLocaleLowerCase())) {
-            const [directive, bindVar] = attrVal.split(":");
+  RequestRenderUI(data);
 
-            el.value = data[bindVar];
-        } else {
-            const valueSplited = attrVal.split("|");
+};
 
-            let text = "";
+export const RequestRenderUI = (data) => {
 
-            for (const binds of valueSplited) {
-                const [directive, bindVar] = binds.split(":");
-
-                if (text) {
-                    text = text.replaceAll("${" + bindVar + "}", data[bindVar]);
-                } else {
-                    text = UiText[uiText].replaceAll("${" + bindVar + "}", data[bindVar]);
-                }
-            }
-
-            el.textContent = text;
-        }
+  for (const key in ElementsBind) {
+    let textSanitezed = "";
+    const element = document.querySelector('[data-cp="' + key + '"]');
+    for (const iterator of ElementsBind[key].bindsValues) {
+      textSanitezed = textSanitezed
+        ? textSanitezed.replace(`\$\{${iterator}\}`, data[iterator])
+        : ElementsBind[key].originalContent.replace(
+            `\$\{${iterator}\}`,
+            data[iterator]
+          );
     }
+    element.textContent = textSanitezed;
+  }
 };
 
 export const Input = ({
-    placeholder,
-    type,
-    id,
-    name,
-    onInput,
-    classList,
-    reactive,
-    bind,
-    bindUiText,
+  placeholder,
+  type,
+  id,
+  name,
+  onInput,
+  classList,
+  reactive,
+  bind,
+  bindUiText,
 }) => {
-    const input = document.createElement("input");
-    input.type = type;
-    if (id) input.id = id;
-    if (name) input.name = name;
+  const input = document.createElement("input");
+  input.type = type;
+  if (id) input.id = id;
+  if (name) input.name = name;
 
-    if (placeholder) {
-        input.placeholder = placeholder;
+  if (placeholder) {
+    input.placeholder = placeholder;
+  }
+
+  if (onInput) {
+    input.oninput = () => {
+      onInput(input);
+    };
+  }
+
+  if (classList) {
+    for (const className of classList) {
+      input.classList.add(className);
     }
+  }
 
-    if (onInput) {
-        input.oninput = () => {
-            onInput(input);
-        };
-    }
+  if (reactive) {
+    input.setAttribute("reactive", "");
+    input.setAttribute("data-cp", uuid.v4());
+  }
 
-    if (classList) {
-        for (const className of classList) {
-            input.classList.add(className);
-        }
-    }
+  if (bind) input.setAttribute("bind", bind);
 
-    if (reactive) {
-        input.setAttribute("reactive", "");
-    }
+  if (bindUiText) p.setAttribute("uiText", bindUiText);
 
-    if (bind) input.setAttribute("bind", bind);
-
-    if (bindUiText) p.setAttribute("uiText", bindUiText);
-
-    return input;
+  return input;
 };
 
-export const Div = ({ textContent, childs, id, classList }) => {
-    const div = document.createElement("div");
-    if (id) div.id = id;
+export const Div = ({ textContent, childs, id, classList, reactive }) => {
+  const div = document.createElement("div");
+  if (id) div.id = id;
 
-    if (textContent) {
-        div.textContent = textContent;
+  if (textContent) {
+    div.textContent = textContent;
+  }
+
+  if (classList) {
+    for (const className of classList) {
+      div.classList.add(className);
     }
+  }
 
-    if (classList) {
-        for (const className of classList) {
-            div.classList.add(className);
-        }
+  if (childs) {
+    for (const child of childs) {
+      div.appendChild(child);
     }
+  }
 
-    if (childs) {
-        for (const child of childs) {
-            div.appendChild(child);
-        }
-    }
+  if(reactive){
+      
+  }
 
-    return div;
+  return div;
 };
 
 export const Checkbox = ({
-    value,
-    id,
-    name,
-    classList,
-    onClick,
-    reactive,
-    bind,
-    bindUiText,
+  value,
+  id,
+  name,
+  classList,
+  onClick,
+  reactive,
+  bind,
+  bindUiText,
 }) => {
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
 
-    checkbox.value = value;
+  checkbox.value = value;
 
-    if (id) checkbox.id = id;
-    if (name) checkbox.name = name;
+  if (id) checkbox.id = id;
+  if (name) checkbox.name = name;
 
-    if (onClick) {
-        checkbox.onclick = () => {
-            onClick(checkbox);
-        };
+  if (onClick) {
+    checkbox.onclick = () => {
+      onClick(checkbox);
+    };
+  }
+
+  if (classList) {
+    for (const className of classList) {
+      checkbox.classList.add(className);
     }
+  }
 
-    if (classList) {
-        for (const className of classList) {
-            checkbox.classList.add(className);
-        }
-    }
+  if (reactive) {
+    checkbox.setAttribute("reactive", "");
+  }
 
-    if (reactive) {
-        checkbox.setAttribute("reactive", "");
-    }
+  if (bind) checkbox.setAttribute("bind", bind);
 
-    if (bind) checkbox.setAttribute("bind", bind);
+  if (bindUiText) checkbox.setAttribute("uiText", bindUiText);
 
-    if (bindUiText) checkbox.setAttribute("uiText", bindUiText);
-
-    return checkbox;
+  return checkbox;
 };
 
 export const Radio = ({ value, id, name, classList }) => {
-    const radio = document.createElement("input");
-    radio.type = "radio";
-    radio.value = value;
-    if (id) radio.id = id;
-    if (name) radio.name = name;
+  const radio = document.createElement("input");
+  radio.type = "radio";
+  radio.value = value;
+  if (id) radio.id = id;
+  if (name) radio.name = name;
 
-    if (classList) {
-        for (const className of classList) {
-            radio.classList.add(className);
-        }
+  if (classList) {
+    for (const className of classList) {
+      radio.classList.add(className);
     }
+  }
 
-    return radio;
+  return radio;
 };
 
-export const Label = ({ labelFor, textContent, id, classList }) => {
-    const label = document.createElement("label");
-    label.for = labelFor;
-    label.textContent = textContent;
-    if (id) label.id = id;
+export const Label = ({ labelFor, textContent, id, classList, reactive }) => {
+  const label = document.createElement("label");
+  label.for = labelFor;
+  label.textContent = textContent;
+  if (id) label.id = id;
 
-    if (classList) {
-        for (const className of classList) {
-            label.classList.add(className);
-        }
+  if (classList) {
+    for (const className of classList) {
+      label.classList.add(className);
     }
+  }
 
-    return label;
+  if (reactive) {
+    if (expression.test(textContent)) {
+      const uuidL = uuid.v4();
+
+      const results = textContent.match(/\$\{.*?\}/g);
+
+      const binds = [];
+
+      for (const key of results) {
+        let keyReplacedOne = key.replace(/\$\{/g, "");
+        let keyReplacedTwo = keyReplacedOne.replace(/\}/g, "");
+        binds.push(keyReplacedTwo);
+      }
+
+      ElementsBind[uuidL] = {
+        originalContent: textContent,
+        bindsValues: [...binds],
+      };
+      label.setAttribute("data-cp", uuidL);
+    }
+  }
+
+  return label;
 };
 
 export const Text = ({
-    textContent,
-    id,
-    classList,
-    bind,
-    bindUiText,
-    reactive,
+  textContent,
+  id,
+  classList,
+  bind,
+  bindUiText,
+  reactive,
 }) => {
-    const p = document.createElement("p");
-    if (textContent) p.textContent = textContent;
-    if (id) p.id = id;
+  const p = document.createElement("p");
+  if (textContent) p.textContent = textContent;
+  if (id) p.id = id;
 
-    if (classList) {
-        for (const className of classList) {
-            p.classList.add(className);
-        }
+  if (classList) {
+    for (const className of classList) {
+      p.classList.add(className);
     }
+  }
 
-    if (reactive) p.setAttribute("reactive", "");
-    if (bind) p.setAttribute("bind", bind);
-    if (bindUiText) p.setAttribute("uiText", bindUiText);
+  if (reactive) {
+    if (expression.test(textContent)) {
+      const uuidP = uuid.v4();
 
-    return p;
+      const results = textContent.match(/\$\{.*?\}/g);
+
+      const binds = [];
+
+      for (const key of results) {
+        let keyReplacedOne = key.replace(/\$\{/g, "");
+        let keyReplacedTwo = keyReplacedOne.replace(/\}/g, "");
+        binds.push(keyReplacedTwo);
+      }
+
+      ElementsBind[uuidP] = {
+        originalContent: textContent,
+        bindsValues: [...binds],
+      };
+      p.setAttribute("data-cp", uuidP);
+    }
+  }
+
+  if (bind) p.setAttribute("bind", bind);
+  if (bindUiText) p.setAttribute("uiText", bindUiText);
+
+  return p;
 };
 
 export const Form = ({ action, method, childs, onSubmit, classList }) => {
-    const form = document.createElement("form");
-    if (action) form.action = action;
+  const form = document.createElement("form");
+  if (action) form.action = action;
 
-    if (method) form.method = method;
+  if (method) form.method = method;
 
-    if (onSubmit)
-        form.onsubmit = (evt) => {
-            onSubmit(evt);
-        };
+  if (onSubmit)
+    form.onsubmit = (evt) => {
+      onSubmit(evt);
+    };
 
-    if (childs) {
-        for (const child of childs) {
-            form.appendChild(child);
-        }
+  if (childs) {
+    for (const child of childs) {
+      form.appendChild(child);
     }
+  }
 
-    if (classList) {
-        for (const className of classList) {
-            form.classList.add(className);
-        }
+  if (classList) {
+    for (const className of classList) {
+      form.classList.add(className);
     }
+  }
 
-    return form;
+  return form;
 };
 
 export const Button = ({
-    id,
-    textContent,
-    type,
-    onClick,
-    classList,
-    bind,
-    bindUiText,
+  id,
+  textContent,
+  type,
+  onClick,
+  classList,
+  bind,
+  bindUiText,
 }) => {
-    const button = document.createElement("button");
-    button.textContent = textContent;
-    if (id) p.id = id;
+  const button = document.createElement("button");
+  button.textContent = textContent;
+  if (id) p.id = id;
 
-    if (type) {
-        button.type = type;
+  if (type) {
+    button.type = type;
+  }
+
+  if (onClick) {
+    button.onclick = () => {
+      onClick(button);
+    };
+  }
+
+  if (classList) {
+    for (const className of classList) {
+      button.classList.add(className);
     }
+  }
 
-    if (onClick) {
-        button.onclick = () => {
-            onClick(button);
-        };
-    }
-
-    if (classList) {
-        for (const className of classList) {
-            button.classList.add(className);
-        }
-    }
-
-    return button;
+  return button;
 };
 
 export const Dialog = ({ childs, id, classList }) => {
-    const dialog = document.createElement("dialog");
+  const dialog = document.createElement("dialog");
 
-    if (!id) throw new Error("provid id to this component");
+  if (!id) throw new Error("provid id to this component");
 
-    dialog.id = id;
+  dialog.id = id;
 
-    if (childs) {
-        for (const child of childs) {
-            dialog.appendChild(child);
-        }
+  if (childs) {
+    for (const child of childs) {
+      dialog.appendChild(child);
     }
+  }
 
-    if (classList) {
-        for (const className of classList) {
-            dialog.classList.add(className);
-        }
+  if (classList) {
+    for (const className of classList) {
+      dialog.classList.add(className);
     }
+  }
 
-    return dialog;
+  return dialog;
 };
 
 export const ShowModal = ({ name, state }) => {
-    let stateOfModal = state ? "show" : "close";
+  let stateOfModal = state ? "show" : "close";
 
-    document.getElementById(name)[stateOfModal]();
+  document.getElementById(name)[stateOfModal]();
 };
 
 export const WatchValue = (obj) => {
-    let value = obj.foo;
+  let value = obj.foo;
 
-    obj.registerNewListener((val) => {
-        value = val;
-    });
+  obj.registerNewListener((val) => {
+    value = val;
+  });
 
-    return value;
+  return value;
 };
 
 export const CreateStore = (obj, UiText) => {
-    return new Proxy(obj, {
-        get(target, property) {
-            return target[property];
-        },
-        set(target, property, value) {
-            target[property] = value;
-            RequestRenderUI(obj, UiText);
-            return true;
-        },
-    });
+  return new Proxy(obj, {
+    get(target, property) {
+      return target[property];
+    },
+    set(target, property, value) {
+      target[property] = value;
+      RequestRenderUI(obj, UiText);
+      return true;
+    },
+  });
 };
