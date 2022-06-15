@@ -11,42 +11,38 @@ import {
 import "./style.css";
 
 const app = AppCp();
-const obj = app.store({
+
+const STORE = app.CreateStore({
   foo: "",
   bar: new Date().toISOString(),
   age: "",
   macarrao: "",
   camarao: "",
-  todoList: ["oi", "oi", "oi", "oi", "oi"],
+  todoList: [],
 });
 
-const onInput = (value) => {
-  obj.foo = value.value;
-};
-
-const onInputAge = (value) => {
-  obj.age = value.value;
-};
-
 const onInputFood = (value) => {
-  if (value.value == "Sim") {
-    obj.macarrao = "macarrao";
-  } else {
-    obj.macarrao = "";
-  }
+  // if (value.value == "Sim") {
+  //   obj.macarrao = "macarrao";
+  // } else {
+  //   obj.macarrao = "";
+  // }
 };
 
 const onInputCamarao = (value) => {
-  if (value.checked) {
-    obj.camarao = "camarao";
-  } else {
-    obj.camarao = "";
-  }
+  // if (value.checked) {
+  //   obj.camarao = "camarao";
+  // } else {
+  //   obj.camarao = "";
+  // }
 };
 
 const onSubmit = (evt) => {
   evt.preventDefault();
-  obj.todoList.push("oi");
+  STORE.storeProxy.todoList.value.push(STORE.storeProxy.foo)
+  console.log(STORE.storeProxy)
+  // STORE.setState("todoList", [...STORE.store.todoList, STORE.store.foo]);
+  
 };
 
 const AppComposition = Div({
@@ -60,7 +56,9 @@ const AppComposition = Div({
           type: "text",
           reactive: true,
           bind: "value:foo",
-          onInput: onInput,
+          onInput: (value) => {
+            // STORE.setState("foo", value.value);
+          },
         }),
         Input({
           classList: ["input-border", "margin-bt"],
@@ -68,7 +66,11 @@ const AppComposition = Div({
           type: "number",
           reactive: true,
           bind: "value:age",
-          onInput: onInputAge,
+          onInput: (value) => {
+            STORE.storeProxy.age = value.value
+            console.log( STORE.storeProxy)
+            // STORE.setState("age", value.value);
+          },
         }),
         Button({
           classList: ["button", "cursor-pointer", "margin-bt"],
@@ -100,14 +102,24 @@ const AppComposition = Div({
         }),
         Div({
           childs: [
-            Radio({ value: "Sim", id: "sim", onClick: onInputFood, name: "confirma" }),
+            Radio({
+              value: "Sim",
+              id: "sim",
+              onClick: onInputFood,
+              name: "confirma",
+            }),
             Label({ textContent: "Sim", reactive: true, labelFor: "sim" }),
-            Radio({ value: "Não", id: "sim", onClick: onInputFood, name: "confirma" }),
+            Radio({
+              value: "Não",
+              id: "sim",
+              onClick: onInputFood,
+              name: "confirma",
+            }),
             Label({ textContent: "Não", reactive: true, labelFor: "sim" }),
           ],
         }),
         Div({
-          childs: obj.todoList.map((tL) =>
+          childs: STORE.store.todoList.map((tL) =>
             Text({ textContent: `${tL} \${foo}`, reactive: true })
           ),
           reactive: true,
@@ -117,4 +129,4 @@ const AppComposition = Div({
   ],
 });
 
-app.CreateApp(AppComposition, "app", "Minha aplicação", obj);
+app.CreateApp(AppComposition, "app", "Minha aplicação", STORE.store);

@@ -1,4 +1,5 @@
 import * as uuid from "uuid";
+import Store from "./Store.js";
 
 const ElementsBind = {};
 
@@ -6,8 +7,8 @@ const expression = /\$\{.*\}/;
 
 export const AppCp = () => {
   return {
-    store: CreateStore,
-    CreateApp,
+    CreateStore,
+    CreateApp
   };
 };
 
@@ -19,20 +20,16 @@ export const CreateApp = (app, rootElement, title, data) => {
   RequestRenderUI(data);
 };
 
-export const CreateStore = (obj) => {
-  return new Proxy(obj, {
-    get(target, property) {
-      return target[property];
-    },
-    set(target, property, value) {
-      target[property] = value;
-      RequestRenderUI(obj);
-      return true;
-    },
-  });
+export const CreateStore = (baseStore) => {
+  const store = new Store();
+  store.store = { ...baseStore };
+  store.create({ ...baseStore })
+
+  return store;
 };
 
 export const RequestRenderUI = (data) => {
+  console.log(1)
   for (const key in ElementsBind) {
     if (ElementsBind[key].isText) {
       let textSanitezed = "";
@@ -47,7 +44,7 @@ export const RequestRenderUI = (data) => {
       }
       element.textContent = textSanitezed;
     } else {
-      console.log(ElementsBind[key]);
+      // console.log(ElementsBind[key]);
     }
   }
 };
@@ -189,10 +186,10 @@ export const Radio = ({ value, id, name, classList, onClick }) => {
     }
   }
 
-  if(onClick){
-      radio.onclick = (evt)=>{
-          onClick(radio, evt)
-      }
+  if (onClick) {
+    radio.onclick = (evt) => {
+      onClick(radio, evt);
+    };
   }
 
   return radio;
