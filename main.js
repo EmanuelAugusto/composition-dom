@@ -18,7 +18,8 @@ const STORE = app.CreateStore({
   age: "",
   macarrao: "",
   camarao: "",
-  todoList: [],
+  check: "",
+  todoList: ["oi ${check}", "oi ${check}"],
 });
 
 const onInputFood = (value) => {
@@ -39,10 +40,9 @@ const onInputCamarao = (value) => {
 
 const onSubmit = (evt) => {
   evt.preventDefault();
-  STORE.storeProxy.todoList.value.push(STORE.storeProxy.foo)
-  console.log(STORE.storeProxy)
+  STORE.storeProxy.todoList.value.push(STORE.storeProxy.foo);
+  console.log(STORE.storeProxy);
   // STORE.setState("todoList", [...STORE.store.todoList, STORE.store.foo]);
-  
 };
 
 const AppComposition = Div({
@@ -57,7 +57,8 @@ const AppComposition = Div({
           reactive: true,
           bind: "value:foo",
           onInput: (value) => {
-            // STORE.setState("foo", value.value);
+            STORE.store.todoList.push("oi ${check}");
+            STORE.setState("foo", value.value);
           },
         }),
         Input({
@@ -67,9 +68,7 @@ const AppComposition = Div({
           reactive: true,
           bind: "value:age",
           onInput: (value) => {
-            STORE.storeProxy.age = value.value
-            console.log( STORE.storeProxy)
-            // STORE.setState("age", value.value);
+            STORE.setState("age", value.value);
           },
         }),
         Button({
@@ -97,7 +96,8 @@ const AppComposition = Div({
           reactive: true,
         }),
         Text({
-          textContent: "Declaro que meu nome é: ${foo}",
+          textContent:
+            "Declaro que meu nome é: ${foo} e concordo com os termos? ${check}",
           reactive: true,
         }),
         Div({
@@ -105,24 +105,32 @@ const AppComposition = Div({
             Radio({
               value: "Sim",
               id: "sim",
-              onClick: onInputFood,
+              onClick: (value) => {
+                STORE.setState("check", value.value);
+              },
               name: "confirma",
             }),
             Label({ textContent: "Sim", reactive: true, labelFor: "sim" }),
             Radio({
               value: "Não",
               id: "sim",
-              onClick: onInputFood,
+              onClick: (value) => {
+                STORE.setState("check", value.value);
+              },
               name: "confirma",
             }),
             Label({ textContent: "Não", reactive: true, labelFor: "sim" }),
           ],
         }),
         Div({
-          childs: STORE.store.todoList.map((tL) =>
-            Text({ textContent: `${tL} \${foo}`, reactive: true })
-          ),
+          childs: (state) => {
+            return state.todoList.map((tL) =>
+              Text({ textContent: `${tL} \${foo}`, reactive: true })
+            );
+          },
+          state: STORE.store,
           reactive: true,
+          childReactive: true,
         }),
       ],
     }),

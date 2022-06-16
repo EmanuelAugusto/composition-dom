@@ -8,7 +8,7 @@ const expression = /\$\{.*\}/;
 export const AppCp = () => {
   return {
     CreateStore,
-    CreateApp
+    CreateApp,
   };
 };
 
@@ -23,28 +23,44 @@ export const CreateApp = (app, rootElement, title, data) => {
 export const CreateStore = (baseStore) => {
   const store = new Store();
   store.store = { ...baseStore };
-  store.create({ ...baseStore })
+  store.create({ ...baseStore });
 
   return store;
 };
 
 export const RequestRenderUI = (data) => {
-  console.log(1)
   for (const key in ElementsBind) {
-    if (ElementsBind[key].isText) {
-      let textSanitezed = "";
-      const element = document.querySelector('[data-cp="' + key + '"]');
-      for (const iterator of ElementsBind[key].bindsValues) {
-        textSanitezed = textSanitezed
-          ? textSanitezed.replace(`\$\{${iterator}\}`, data[iterator])
-          : ElementsBind[key].originalContent.replace(
-              `\$\{${iterator}\}`,
-              data[iterator]
-            );
+    try {
+      if (ElementsBind[key].isText) {
+        let textSanitezed = "";
+        const element = document.querySelector('[data-cp="' + key + '"]');
+        for (const iterator of ElementsBind[key].bindsValues) {
+          textSanitezed = textSanitezed
+            ? textSanitezed.replace(`\$\{${iterator}\}`, data[iterator])
+            : ElementsBind[key].originalContent.replace(
+                `\$\{${iterator}\}`,
+                data[iterator]
+              );
+        }
+        element.textContent = textSanitezed;
+      } else {
+        const elementsFn = ElementsBind[key].childrensAlreadyRendered(data);
+        
+        const item = document.querySelector('[data-cp="' + key + '"]')
+
+        for (const [keyChild, child] of elementsFn.entries()) {
+          if(!item.children[keyChild]){
+              item.appendChild(child)      
+          }else{
+            // item.removeChild(item.children[keyChild])
+            item.children[keyChild].replaceChildren(child)
+            
+          }
+    
+        }
       }
-      element.textContent = textSanitezed;
-    } else {
-      // console.log(ElementsBind[key]);
+    } catch (error) {
+      console.warn(ElementsBind[key]);
     }
   }
 };
@@ -93,7 +109,15 @@ export const Input = ({
   return input;
 };
 
-export const Div = ({ textContent, childs, id, classList, reactive }) => {
+export const Div = ({
+  textContent,
+  childs,
+  id,
+  classList,
+  reactive,
+  childReactive,
+  state
+}) => {
   const div = document.createElement("div");
   if (id) div.id = id;
   const uuidD = uuid.v4();
@@ -110,10 +134,19 @@ export const Div = ({ textContent, childs, id, classList, reactive }) => {
   let childsRendered = [];
 
   if (childs) {
-    for (const [key, child] of childs.entries()) {
-      child.setAttribute("key-cp", `${uuidD}-${key}`);
-      div.appendChild(child);
-      childsRendered.push(child.getAttribute("data-cp"));
+    if (!childReactive) {
+      for (const [key, child] of childs.entries()) {
+        child.setAttribute("key-cp", `${uuidD}-${key}`);
+        div.appendChild(child);
+        childsRendered.push(child.getAttribute("data-cp"));
+      }
+    } else {
+      const elChilds = childs(state);
+      for (const [key, child] of elChilds.entries()) {
+        child.setAttribute("key-cp", `${uuidD}-${key}`);
+        div.appendChild(child);
+        childsRendered.push(child.getAttribute("data-cp"));
+      }
     }
   }
 
@@ -123,7 +156,7 @@ export const Div = ({ textContent, childs, id, classList, reactive }) => {
     ElementsBind[uuidD] = {
       originalContent: null,
       bindsValues: [],
-      childrensAlreadyRendered: childsRendered,
+      childrensAlreadyRendered: childs,
       isTextContentNull: true,
       isText: false,
     };
