@@ -141,8 +141,27 @@ export const Form = (props) => {
 
   if (props["t-show"]) {
     form.setAttribute("t-show", props["t-show"]);
-    form.dataset.typeElement = "Input";
   }
 
   return form;
+};
+
+export const HtmlTag = (props) => {
+  const htmlTag = document.createElement(props.htmlTag);
+
+  for (const key in props) {
+    htmlTag[key] = props[key];
+  }
+
+  if (props.childsArray) {
+    for (const child of props.childsArray) {
+      htmlTag.appendChild(child);
+    }
+  }
+
+  if (props["t-show"]) {
+    htmlTag.setAttribute("t-show", props["t-show"]);
+  }
+
+  return htmlTag;
 };

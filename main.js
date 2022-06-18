@@ -6,6 +6,7 @@ import {
   Button,
   Form,
   Title,
+  HtmlTag,
 } from "./components/components.js";
 import "./style.css";
 
@@ -34,7 +35,7 @@ const AppRoot = Div({
                 placeholder: "Digite seu nome",
                 type: "text",
                 classList: "input-border padding-05",
-                autofocus: true
+                autofocus: true,
               },
               "name"
             ),
@@ -75,6 +76,15 @@ const AppRoot = Div({
               },
               "name"
             ),
+            Text({
+              textContent:
+                "Esse é um teste de tag customizada",
+            }),
+            HtmlTag({
+              htmlTag: "ul",
+              "t-show": (context) => context.age >= 18,
+              childsArray: [HtmlTag({ htmlTag: "li", textContent: "teste" })],
+            }),
           ],
         }),
       ],
