@@ -1,309 +1,148 @@
-export const App = (app, rootElement, title, data, UiText) => {
-    if (title) document.title = title;
+const expression = /\$\{.*\}/;
 
-    document.getElementById(rootElement).appendChild(app);
-    RequestRenderUI(data, UiText);
+export const Div = (props) => {
+  const div = document.createElement("div");
+
+  for (const key in props) {
+    div[key] = props[key];
+  }
+
+  for (const child of props.childsArray) {
+    div.appendChild(child);
+  }
+
+  if (props["t-show"]) {
+    div.setAttribute("t-show", props["t-show"]);
+    div.dataset.typeElement = "Input";
+  }
+
+  return div;
+};
+export const Title = (props) => {
+  const text = document.createElement(`h${props.heightTitle}`);
+
+  for (const key in props) {
+    text[key] = props[key];
+  }
+
+  if (props.isReactive) {
+    text.setAttribute("isReactive", "");
+
+    if (expression.test(props.textContent)) {
+      const results = props.textContent.match(/\$\{.*?\}/g);
+
+      const binds = [];
+
+      for (const key of results) {
+        let keyReplacedOne = key.replace(/\$\{/g, "");
+        let keyReplacedTwo = keyReplacedOne.replace(/\}/g, "");
+        binds.push(keyReplacedTwo);
+      }
+
+      text.dataset.textContent = props.textContent;
+      text.dataset.binds = binds;
+      text.dataset.typeElement = "Text";
+    }
+  }
+
+  if (props["t-show"]) {
+    text.setAttribute("t-show", props["t-show"]);
+    text.dataset.typeElement = "Input";
+  }
+
+  return text;
 };
 
-export const RequestRenderUI = (data, UiText) => {
-    const elments = document.querySelectorAll("[reactive]");
+export const Text = (props) => {
+  const text = document.createElement("p");
 
-    for (const el of elments) {
-        const attrVal = el.getAttribute("bind");
-        const uiText = el.getAttribute("uiText");
+  for (const key in props) {
+    text[key] = props[key];
+  }
 
-        if (["input"].includes(el.tagName.toLocaleLowerCase())) {
-            const [directive, bindVar] = attrVal.split(":");
+  if (props.isReactive) {
+    text.setAttribute("isReactive", "");
 
-            el.value = data[bindVar];
-        } else {
-            const valueSplited = attrVal.split("|");
+    if (expression.test(props.textContent)) {
+      const results = props.textContent.match(/\$\{.*?\}/g);
 
-            let text = "";
+      const binds = [];
 
-            for (const binds of valueSplited) {
-                const [directive, bindVar] = binds.split(":");
+      for (const key of results) {
+        let keyReplacedOne = key.replace(/\$\{/g, "");
+        let keyReplacedTwo = keyReplacedOne.replace(/\}/g, "");
+        binds.push(keyReplacedTwo);
+      }
 
-                if (text) {
-                    text = text.replaceAll("${" + bindVar + "}", data[bindVar]);
-                } else {
-                    text = UiText[uiText].replaceAll("${" + bindVar + "}", data[bindVar]);
-                }
-            }
-
-            el.textContent = text;
-        }
+      text.dataset.textContent = props.textContent;
+      text.dataset.binds = binds;
+      text.dataset.typeElement = "Text";
     }
+  }
+
+  if (props["t-show"]) {
+    text.setAttribute("t-show", props["t-show"]);
+    text.dataset.typeElement = "Input";
+  }
+
+  return text;
 };
 
-export const Input = ({
-    placeholder,
-    type,
-    id,
-    name,
-    onInput,
-    classList,
-    reactive,
-    bind,
-    bindUiText,
-}) => {
-    const input = document.createElement("input");
-    input.type = type;
-    if (id) input.id = id;
-    if (name) input.name = name;
+export const Input = (props, bindValue) => {
+  const input = document.createElement("input");
 
-    if (placeholder) {
-        input.placeholder = placeholder;
-    }
+  for (const key in props) {
+    input[key] = props[key];
+  }
+  if (bindValue) {
+    input.setAttribute("t-model", bindValue);
+  }
 
-    if (onInput) {
-        input.oninput = () => {
-            onInput(input);
-        };
-    }
+  if (props.isReactive) {
+    input.setAttribute("isReactive", "");
+    input.dataset.typeElement = "Input";
+  }
 
-    if (classList) {
-        for (const className of classList) {
-            input.classList.add(className);
-        }
-    }
+  if (props["t-show"]) {
+    input.setAttribute("t-show", props["t-show"]);
+    input.dataset.typeElement = "Input";
+  }
 
-    if (reactive) {
-        input.setAttribute("reactive", "");
-    }
-
-    if (bind) input.setAttribute("bind", bind);
-
-    if (bindUiText) p.setAttribute("uiText", bindUiText);
-
-    return input;
+  return input;
 };
 
-export const Div = ({ textContent, childs, id, classList }) => {
-    const div = document.createElement("div");
-    if (id) div.id = id;
+export const Button = (props) => {
+  const button = document.createElement("button");
 
-    if (textContent) {
-        div.textContent = textContent;
-    }
+  for (const key in props) {
+    button[key] = props[key];
+  }
 
-    if (classList) {
-        for (const className of classList) {
-            div.classList.add(className);
-        }
-    }
+  if (props["t-show"]) {
+    button.setAttribute("t-show", props["t-show"]);
+    button.dataset.typeElement = "Input";
+  }
 
-    if (childs) {
-        for (const child of childs) {
-            div.appendChild(child);
-        }
-    }
-
-    return div;
+  return button;
 };
 
-export const Checkbox = ({
-    value,
-    id,
-    name,
-    classList,
-    onClick,
-    reactive,
-    bind,
-    bindUiText,
-}) => {
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
+export const Form = (props) => {
+  const form = document.createElement("form");
 
-    checkbox.value = value;
+  for (const key in props) {
+    form[key] = props[key];
+  }
 
-    if (id) checkbox.id = id;
-    if (name) checkbox.name = name;
-
-    if (onClick) {
-        checkbox.onclick = () => {
-            onClick(checkbox);
-        };
+  if (props.childsArray) {
+    for (const child of props.childsArray) {
+      form.appendChild(child);
     }
+  }
 
-    if (classList) {
-        for (const className of classList) {
-            checkbox.classList.add(className);
-        }
-    }
+  if (props["t-show"]) {
+    form.setAttribute("t-show", props["t-show"]);
+    form.dataset.typeElement = "Input";
+  }
 
-    if (reactive) {
-        checkbox.setAttribute("reactive", "");
-    }
-
-    if (bind) checkbox.setAttribute("bind", bind);
-
-    if (bindUiText) checkbox.setAttribute("uiText", bindUiText);
-
-    return checkbox;
-};
-
-export const Radio = ({ value, id, name, classList }) => {
-    const radio = document.createElement("input");
-    radio.type = "radio";
-    radio.value = value;
-    if (id) radio.id = id;
-    if (name) radio.name = name;
-
-    if (classList) {
-        for (const className of classList) {
-            radio.classList.add(className);
-        }
-    }
-
-    return radio;
-};
-
-export const Label = ({ labelFor, textContent, id, classList }) => {
-    const label = document.createElement("label");
-    label.for = labelFor;
-    label.textContent = textContent;
-    if (id) label.id = id;
-
-    if (classList) {
-        for (const className of classList) {
-            label.classList.add(className);
-        }
-    }
-
-    return label;
-};
-
-export const Text = ({
-    textContent,
-    id,
-    classList,
-    bind,
-    bindUiText,
-    reactive,
-}) => {
-    const p = document.createElement("p");
-    if (textContent) p.textContent = textContent;
-    if (id) p.id = id;
-
-    if (classList) {
-        for (const className of classList) {
-            p.classList.add(className);
-        }
-    }
-
-    if (reactive) p.setAttribute("reactive", "");
-    if (bind) p.setAttribute("bind", bind);
-    if (bindUiText) p.setAttribute("uiText", bindUiText);
-
-    return p;
-};
-
-export const Form = ({ action, method, childs, onSubmit, classList }) => {
-    const form = document.createElement("form");
-    if (action) form.action = action;
-
-    if (method) form.method = method;
-
-    if (onSubmit)
-        form.onsubmit = (evt) => {
-            onSubmit(evt);
-        };
-
-    if (childs) {
-        for (const child of childs) {
-            form.appendChild(child);
-        }
-    }
-
-    if (classList) {
-        for (const className of classList) {
-            form.classList.add(className);
-        }
-    }
-
-    return form;
-};
-
-export const Button = ({
-    id,
-    textContent,
-    type,
-    onClick,
-    classList,
-    bind,
-    bindUiText,
-}) => {
-    const button = document.createElement("button");
-    button.textContent = textContent;
-    if (id) p.id = id;
-
-    if (type) {
-        button.type = type;
-    }
-
-    if (onClick) {
-        button.onclick = () => {
-            onClick(button);
-        };
-    }
-
-    if (classList) {
-        for (const className of classList) {
-            button.classList.add(className);
-        }
-    }
-
-    return button;
-};
-
-export const Dialog = ({ childs, id, classList }) => {
-    const dialog = document.createElement("dialog");
-
-    if (!id) throw new Error("provid id to this component");
-
-    dialog.id = id;
-
-    if (childs) {
-        for (const child of childs) {
-            dialog.appendChild(child);
-        }
-    }
-
-    if (classList) {
-        for (const className of classList) {
-            dialog.classList.add(className);
-        }
-    }
-
-    return dialog;
-};
-
-export const ShowModal = ({ name, state }) => {
-    let stateOfModal = state ? "show" : "close";
-
-    document.getElementById(name)[stateOfModal]();
-};
-
-export const WatchValue = (obj) => {
-    let value = obj.foo;
-
-    obj.registerNewListener((val) => {
-        value = val;
-    });
-
-    return value;
-};
-
-export const CreateStore = (obj, UiText) => {
-    return new Proxy(obj, {
-        get(target, property) {
-            return target[property];
-        },
-        set(target, property, value) {
-            target[property] = value;
-            RequestRenderUI(obj, UiText);
-            return true;
-        },
-    });
+  return form;
 };
